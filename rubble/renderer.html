@@ -1,0 +1,662 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover'/>
+    <title>City-on-Web</title>
+<style>
+body {
+  font-family: Helvetica, "Helvetica Neue", sans-serif;
+  font-size: 18px;
+  background: #FFF;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+#error {
+  display: none;
+  position: fixed;
+  top: 20px; left: 20px; right: 20px; bottom: 20px;
+  background: #444;
+  padding: 8px;
+  white-space: pre;
+  color: #fff;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+#Loading {
+  position: absolute;
+  top: 12px;
+  left: 90px;
+}
+
+#Loading h4 {
+  margin: 0px;
+}
+
+#loading-container {
+  width: 150px;
+  height: 150px;
+  padding: 0px;
+  margin: 0 0 0 0;
+  position: absolute;
+  top: 40%;
+  left: 45%;
+}
+
+.loading-bgbox {
+  position: absolute;
+  width: 65px;
+  height: 65px;
+  background-color: #DDD;
+  width: 65px;
+  height: 65px;
+}
+
+#topleft {
+  top: 5px;
+  left: 5px;
+}
+
+#bottomleft {
+  bottom: 5px;
+  left: 5px;
+}
+
+#topright {
+  top: 5px;
+  right: 5px;
+}
+
+#bottomright {
+  bottom: 5px;
+  right: 5px;
+}
+
+#loading-indicator {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 65px;
+  height: 65px;
+  background-color: #999;
+  animation-name: indicator;
+  animation-duration: 5s;
+  animation-iteration-count: infinite;
+}
+
+@keyframes indicator {
+  0%   {top: 5px; left: 5px; }
+  25%  {top: 5px; left: 80px; }
+  50%  {top: 80px; left: 80px; }
+  75%  {top: 80px; left: 5px; }
+}
+
+#viewspacecontainer {
+  position: relative;
+  text-align: center;
+  display: none;
+  border: 3px solid #000;
+}
+
+/* The main MERF view */
+.view {
+  margin: auto;
+  overflow: hidden;
+  transform-origin: top left;
+  background: #000;
+  /* width: 100vw; */
+  /* width: 100vh; */
+}
+</style>
+
+<link type="text/css" href="css/lrtk.css" rel="stylesheet" />
+
+<link type="text/css" href="css/scene-list.css" rel="stylesheet" />
+
+<script src="https://s3.pstatp.com/cdn/expire-1-M/jquery/3.3.1/jquery.min.js"></script>
+
+<script src="lrtk.js"></script>
+
+<link rel="stylesheet" href="./layui/css/layui.css">
+<script src="./layui/layui.js"></script>
+
+</head>
+<body style="overflow:hidden">
+
+  <div id="black-div" style="width: 100vw;height:100vh;z-index: 999;position: absolute;left:0px;top:0px;background-color: #000;"></div>
+
+<div id=error></div>
+
+<div id="viewspacecontainer">
+  <div id="Loading">
+    <h4>
+    <span id="image-progress">Loading images: 0/?</span>
+    </h4>
+  </div>
+  <div id="loading-container" style="z-index: 1000;">
+    <img src="./images/loading.gif" style="width: 177px;height: 80px;"/>
+    <div id="loading-percentage-text" style="color: #fff;font-size: 16px;font-weight: 600;padding-left: 20px;">正在加载中....</div>
+  </div>
+  <div>
+    <div class=viewspace id="viewspace"></div>
+    <div style="z-index: 99;position: absolute;right: 25px;top: 10px;"> 
+      <img src="./images/1.png" style="width: 60px;height: 60px;position: relative;right: -80px;top: 10px;">
+      <img src="./images/2.png" class="imgbtn" onmousedown="btnControls('w')" onmouseup="btnControls()" style="width: 22px;height: 12px;position: relative;right: -35px;top: -10px;">
+      <img src="./images/4.png" class="imgbtn" onmousedown="btnControls('s')" onmouseup="btnControls()" style="width: 22px;height: 12px;position: relative;right: -10px;top: 30px;">
+      <img src="./images/6.png" class="imgbtn" onmousedown="btnControls('d')" onmouseup="btnControls()" style="width: 12px;height: 22px;position: relative;right: -10px;top: 10px;">
+      <img src="./images/7.png" class="imgbtn" onmousedown="btnControls('a')" onmouseup="btnControls()" style="width: 12px;height: 22px;position: relative;right: 50px;top: 10px;">
+    </div>
+    <div style="z-index: 99;position: absolute;right: 25px;top: 100px;"> 
+      <img src="./images/3.png" class="imgbtn" onmousedown="btnControls('r')" onmouseup="btnControls()" style="width: 26px;height: 26px;position: relative;right: -10px;top: 0px;">
+      <img src="./images/5.png" class="imgbtn" onmousedown="btnControls('f')" onmouseup="btnControls()" style="width: 26px;height: 26px;position: relative;right: 19px;top: 37px;">
+    </div>
+    <div style="z-index: 99;position: absolute;right: 25px;top: 78px;"> 
+    </div>
+    <div style="z-index: 99;position: absolute;right: 27px;top: 188px;"> 
+      <img src="./images/10.png" style="width: 76px;height: 76px;position: relative;right: -115px;top: 0px;">
+      <img src="./images/11.png" class="imgbtn" onmousedown="btnControls('up')" onmouseup="btnControls()" style="width: 23px;height: 23px;position: relative;right: -62px;top: -27px;">
+      <img src="./images/12.png" class="imgbtn" onmousedown="btnControls('do')" onmouseup="btnControls()" style="width: 23px;height: 23px;position: relative;right: -35px;top: 26px;">
+      <img src="./images/14.png" class="imgbtn" onmousedown="btnControls('ri')" onmouseup="btnControls()" style="width: 23px;height: 23px;position: relative;right: -35px;top: 0px;">
+      <img src="./images/13.png" class="imgbtn" onmousedown="btnControls('le')" onmouseup="btnControls()" style="width: 23px;height: 23px;position: relative;right: 45px;top: 0px;">
+    </div>
+  </div>
+  <div style="position:absolute;left: 100px;bottom: 50px;">
+    <!-- <button onclick="dynamicLoading2(1)" type="button" class="layui-btn">1</button>
+    <button onclick="dynamicLoading2(2)" type="button" class="layui-btn">2</button>
+    <button onclick="dynamicLoading2(3)" type="button" class="layui-btn">3</button>
+    <button onclick="dynamicLoading2(4)" type="button" class="layui-btn">4</button>
+    <button onclick="dynamicLoading2(5)" type="button" class="layui-btn">5</button>
+    <button onclick="dynamicLoading2(6)" type="button" class="layui-btn">6</button>
+    <button onclick="dynamicLoading2(7)" type="button" class="layui-btn">7</button>
+    <button onclick="dynamicLoading2(8)" type="button" class="layui-btn">8</button>
+    <button onclick="dynamicLoading2(9)" type="button" class="layui-btn">9</button> -->
+  </div>
+</div>
+
+<style>
+  .imgbtn:hover{
+    cursor:pointer;
+    filter: brightness(0.7);
+  }
+  .menubtn{
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #FFF;
+    padding: 7px 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  .menubtn-select{
+    background-color: rgb(19, 207, 188);
+  }
+
+  .scrollbar6::-webkit-scrollbar {
+      width: 6px;
+  }
+  .scrollbar6::-webkit-scrollbar-track {
+      border-radius: 8px;
+      background-color: #60636d;
+      border: 1px solid #7e7f82;
+  }
+  .scrollbar6::-webkit-scrollbar-thumb {
+      border-radius: 8px;
+      background-color: #1a84d0;
+  }
+</style>
+
+<script>
+  const httpUrl = 'http://8.136.140.71/livescene';
+  let pointArr = [];
+  let logoUrl = ''
+
+  layui.use(function(){
+    var util = layui.util;
+    var upload = layui.upload;
+    var element = layui.element;
+
+    // 事件
+    util.on('lay-on', {
+      close:function(){
+        var index = parent.layer.getFrameIndex(window.name);
+        parent.layer.close(index);
+      }
+    })
+
+    var uploadInst = upload.render({
+      elem: '#ID-upload-logo-btn',
+      url: httpUrl+'/route/upload', 
+      before: function(obj){
+        // 预读本地文件示例，不支持ie8
+        obj.preview(function(index, file, result){
+          $('#ID-upload-logo-img').attr('src', result); // 图片链接（base64）
+        });
+        
+        element.progress('filter-logo', '0%'); // 进度条复位
+        layer.msg('上传中', {icon: 16, time: 0});
+      },
+      done: function(res){
+        // 若上传失败
+        if(res.code != 200){
+          return layer.msg('上传失败');
+        }
+
+        $("#ID-upload-logo-btn").hide()
+        $("#ID-upload-logo-btn2").show()
+
+        logoUrl = res.data
+
+        // 上传成功的一些操作
+        // …
+        $('#ID-upload-logo-text').html(''); // 置空上传失败的状态
+      },
+      error: function(){
+
+      },
+      // 进度条
+      progress: function(n, elem, e){
+        element.progress('filter-logo', n + '%'); // 可配合 layui 进度条元素使用
+        if(n == 100){
+          layer.msg('上传完毕', {icon: 1,time: 1000});
+        }
+      }
+    });
+
+    upload.render({
+      elem: '#ID-upload-logo-btn2',
+      url: httpUrl+'/route/upload', // 此处用的是第三方的 http 请求演示，实际使用时改成您自己的上传接口即可。
+      before: function(obj){
+        // 预读本地文件示例，不支持ie8
+        obj.preview(function(index, file, result){
+          $('#ID-upload-logo-img').attr('src', result); // 图片链接（base64）
+        });
+        
+        element.progress('filter-logo', '0%'); // 进度条复位
+        layer.msg('上传中', {icon: 16, time: 0});
+      },
+      done: function(res){
+        // 若上传失败
+        if(res.code != 200){
+          return layer.msg('上传失败');
+        }
+
+        $("#ID-upload-logo-btn").hide()
+        $("#ID-upload-logo-btn2").show()
+
+        // 上传成功的一些操作
+        // …
+        $('#ID-upload-logo-text').html(''); // 置空上传失败的状态
+      },
+      error: function(){
+
+      },
+      // 进度条
+      progress: function(n, elem, e){
+        element.progress('filter-logo', n + '%'); // 可配合 layui 进度条元素使用
+        if(n == 100){
+          layer.msg('上传完毕', {icon: 1,time: 1000});
+        }
+      }
+    });
+  })
+</script>
+
+<script>
+  function startRoam(data){
+    preview(data)
+  }
+
+  $(document).ready(function(){
+
+    init();
+  });
+
+  function init(){
+    const params = new URL(window.location.href).searchParams;
+    const path = params.get('path');
+
+    start(path);
+  }
+
+  function btnControls(key){
+    gOrbitControls.btnControls(key);
+  }
+</script>
+
+<!-- third party -->
+<script src="third_party/three.js"></script>
+<script src="third_party/OrbitControls.js"></script>
+<script src="third_party/PointerLockControls.js"></script>
+<script src="third_party/FlyControls.js"></script>
+<script src="third_party/zlib.js"></script>
+<script src="third_party/png.js"></script>
+<script src="third_party/stats.min.js"></script>
+<script src="third_party/lil-gui.18.js"></script>
+<script src="third_party/GLTFLoader.js"></script>
+<script src="third_party/CSS3DRenderer.js"></script>
+<script src="utils.js"></script>
+
+
+
+<script>
+  var scene1 = new THREE.Scene();
+  var camera1 = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera1.position.set(1.5913485740898035,0.8741311600920052,0.024979204522708368);
+  var mesh1 = null;
+  var mesh2 = null;
+
+  const axesHelper1 = new THREE.AxesHelper(40);
+
+  var renderTarget1 = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
+
+
+  var scene2 = new THREE.Scene();
+
+  var cameraPosition1 = null;
+
+  var cameraPosition2 = null;
+
+  var cameraRotation1 = null;
+
+  var cameraRotation2 = null;
+
+  function addBox(){
+    // const geometry = new THREE.BoxGeometry(0.01, 0.1, 0.2);
+
+    // var coneGeometry = new THREE.ConeGeometry(0.01, 0.04, 32);
+
+    // const video = document.createElement("video");
+    // video.src = '/merf-qizhong/renderer/video/cy01.mp4';
+    // video.muted = true;
+    // video.autoplay = "autoplay";
+    // video.loop = true;
+    // video.play();
+    // const videoTexture = new THREE.VideoTexture(video);
+    // const videoMaterial = new THREE.MeshBasicMaterial({
+    //   map: videoTexture,
+    // });
+
+    // const material = new THREE.MeshBasicMaterial({
+    //   color: 0xff0000,//0xff0000设置材质颜色为红色
+    // }); 
+
+    // mesh1 = new THREE.Mesh(geometry, videoMaterial);
+    // mesh1.rotation.y += 0.60;
+    // mesh1.position.set(-0.095,-0.4043932470225078,-0.081425543578661);
+
+    // scene1.add(mesh1);
+
+    // mesh2 = new THREE.Mesh(coneGeometry, material);
+    // mesh2.rotation.z += Math.PI;
+    // scene1.add(mesh2);
+
+    
+    //scene1.add(axesHelper1);
+
+    const cameraHelper = new THREE.CameraHelper(gCamera);
+    // scene1.add(cameraHelper);
+
+    const gridHelper = new THREE.GridHelper(40, 400, 'rgb(255,255,255)', 'rgb(255,255,255)');
+    //scene1.add(gridHelper);
+  }
+
+  function addPlane(){
+    var meshMaterial = new THREE.MeshBasicMaterial({ map: renderTarget1.texture });
+    const geometry = new THREE.PlaneGeometry(400, 400);
+    const mesh = new THREE.Mesh(geometry, meshMaterial);
+
+    scene2.add(mesh);
+  }
+
+  function meshRender(){
+    gRenderer.setRenderTarget(renderTarget1);
+    gRenderer.clear();
+    gRenderer.setClearColor(0xffffff, 0.0);
+    gRenderer.render(scene1,camera1)
+  }
+
+  window.addEventListener("dblclick", function(event){
+		let raycaster = new THREE.Raycaster();
+		let mouse = new THREE.Vector2();
+		mouse.x = ((event.offsetX) / (window.innerWidth - 46)) * 2 - 1;
+		mouse.y = -((event.offsetY) / (window.innerHeight - 46)) * 2 + 1;
+		raycaster.setFromCamera(mouse, gCamera);
+    viewRange();
+
+    var intersec_xz = new THREE.Vector3();
+    var ray_step = (-0.4 - raycaster.ray.origin.y)/raycaster.ray.direction.y;
+    intersec_xz.x = raycaster.ray.origin.x + raycaster.ray.direction.x*ray_step;
+    intersec_xz.y = raycaster.ray.origin.y + raycaster.ray.direction.y*ray_step;
+    intersec_xz.z = raycaster.ray.origin.z + raycaster.ray.direction.z*ray_step;
+    // console.log('gCamera.position:', gCamera.position.x+','+gCamera.position.y+','+gCamera.position.z);
+    // console.log('gCamera.rotation:', gCamera.rotation.x+','+gCamera.rotation.y+','+gCamera.rotation.z);
+    // console.log('gOrbitControls', gOrbitControls.target);
+    // console.log('gOrbitControls', gOrbitControls);
+    
+    gCamera.updateMatrix()
+    // raySelectPoint(raycaster.ray);
+  }, true)
+
+  function raySelectPoint(ray){
+    var startPoint = new THREE.Vector3().copy(ray.origin);
+    var endPoint = new THREE.Vector3(ray.origin.x + ray.direction.x * 10000, ray.origin.y + ray.direction.y * 10000, ray.origin.z + ray.direction.z * 10000);
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(startPoint, endPoint); 
+
+
+    if(!cameraPosition1){
+      cameraPosition1 = new THREE.Vector3(ray.origin.x,ray.origin.y,ray.origin.z);
+      cameraRotation1 = new THREE.Vector3(ray.direction.x,ray.direction.y,ray.direction.z);
+
+      var material = new THREE.LineBasicMaterial({ color: '#00ff00' });
+      var line = new THREE.Line(geometry, material);
+      line.auxiliaryLine = true;
+      scene1.add(line);
+
+      layer.msg('请旋转一个角度，再选择一次相同的像素点', {time: 1000});
+    }else if(!cameraPosition2){
+      cameraPosition2 = new THREE.Vector3(ray.origin.x,ray.origin.y,ray.origin.z);
+      cameraRotation2 = new THREE.Vector3(ray.direction.x,ray.direction.y,ray.direction.z);
+
+      var material = new THREE.LineBasicMaterial({ color: '#0000ff' });
+      var line = new THREE.Line(geometry, material);
+      line.auxiliaryLine = true;
+      scene1.add(line);
+    }
+
+    if(cameraPosition1 && cameraPosition2){
+      selectedMesh = null;
+
+      let calculatePosition = shortestDistance(cameraPosition1, cameraRotation1, cameraPosition2, cameraRotation2);
+      console.log('calculatePosition', calculatePosition);
+      // intersec_xz.copy(calculatePosition.pointCenter);
+      const meshAxesHelper = new THREE.AxesHelper(40);
+      scene1.add(meshAxesHelper);
+      meshAxesHelper.position.copy(calculatePosition.pointCenter);
+
+      resetSelectPoint();
+    }
+  }
+
+  function resetSelectPoint(){
+    for(let i=scene1.children.length-1;i>=0;i--){
+      if(scene1.children[i].auxiliaryLine){
+        scene1.remove(scene1.children[i]);
+      }
+    }
+    cameraPosition1 = null;
+    cameraPosition2 = null;
+    cameraRotation1 = null;
+    cameraRotation2 = null;
+  }
+
+  function dynamicLoading2(i){
+    i--;
+    blockArr[i].render = !blockArr[i].render
+    if(blockArr[i].render){
+      renderBlock(i);
+    }else{
+      gRayMarchScene.children.forEach(function(child){  
+        if(child.uuid == blockArr[i].uuid){
+          gRayMarchScene.remove(child);
+          blockArr[i].isCreate = false;
+          return;
+        }
+      })
+    }
+  }
+
+
+
+  function dynamicLoading(){
+    let range = viewRange();
+
+    let cameraPosition = gCamera.position;
+    let meshs = gRayMarchScene.children;
+    
+    // console.log(meshs);
+    meshs.sort((a, b) => {
+      // console.log("ds_pos",a.ds_pos)
+      const dxA = a.ds_pos[0] - cameraPosition.x;
+      const dzA = a.ds_pos[1] - cameraPosition.z;
+      const distanceA = dxA * dxA + dzA * dzA;
+      
+      // 计算b的xz距离
+      const dxB = b.ds_pos[0] - cameraPosition.x;
+      const dzB = b.ds_pos[1] - cameraPosition.z;
+      const distanceB = dxB * dxB + dzB * dzB;
+
+      return distanceB - distanceA; // 由远到近排序
+    });
+
+    meshs.forEach((item, index) => {
+      
+      item.renderOrder = index + 1;
+    });
+
+    
+//    blockArr.forEach(function(block,index){
+//      meshs.forEach(item => {
+//        if(item.uuid == block.uuid){
+//          if(item.uuid='block_5'){
+//           item.renderOrder = 3;
+//         }
+//          else{
+//
+//            const min = new THREE.Vector3(block.tlp[0], -10000000, block.tlp[2]);
+//            const max = new THREE.Vector3(block.trp[0], 10000000, block.blp[2]);
+//            const box = new THREE.Box3(min, max);
+//            
+//           const isInside = box.containsPoint(cameraPosition);
+ //           if(isInside){
+ //             console.log('cameraPosition', cameraPosition);
+ //             console.log('item', item);
+ //             console.log(block.uuid, box);
+ //             item.renderOrder = 1;
+  //          }
+  //        }
+//
+ //       }
+//
+ //     });
+ blockArr.forEach(function(block,index){
+      if(Math.min(range.topLeftIntersection.x, range.topRightIntersection.x, range.bottomLeftIntersection.x, range.bottomRightIntersection.x) > block.trp[0]
+          || Math.min(range.topLeftIntersection.z, range.topRightIntersection.z, range.bottomLeftIntersection.z, range.bottomRightIntersection.z) > block.blp[2]
+          || Math.max(range.topLeftIntersection.x, range.topRightIntersection.x, range.bottomLeftIntersection.x, range.bottomRightIntersection.x) < block.tlp[0]
+          || Math.max(range.topLeftIntersection.z, range.topRightIntersection.z, range.bottomLeftIntersection.z, range.bottomRightIntersection.z) < block.tlp[2]){
+        // block.render = false;
+        // dynamicRemovePlane(block)
+        // console.log('dynamicRemovePlane')
+      }else{
+        block.render = true;
+        renderBlock(index);
+       
+      }
+    });
+  }
+
+  function updateMatrix() {
+    const matrixInput = document.getElementById("matrixInput");
+    const matrixValues = matrixInput.value.split('\n').flatMap(row => row.split(',').map(Number));
+    const modelMatrix = new Float32Array(matrixValues);
+    
+    // 假设你已经有了一个 WebGL 上下文和一个着色器程序
+    // 这里你需要替换成你自己的 WebGL 上下文和着色器程序变量
+    mat4_pose_world = new THREE.Matrix4();
+    mat4_pose_world.fromArray(modelMatrix);
+    console.log("pose",mat4_pose_world);
+    let meshs = gRayMarchScene.children; 
+    meshs.forEach(item => {
+      if ((item.uuid == "block_5 ") || (item.uuid == "block_6"))
+      {
+        item.material.uniforms['pos_folder']['value'] = mat4_pose_world;
+      }
+    });
+
+    console.log("gRayM",gRayMarchScene);
+  }
+  function dynamicRemovePlane(block){
+    gRayMarchScene.children.forEach(function(child){  
+      if(child.uuid == block.uuid){
+        gRayMarchScene.remove(child);
+        child.geometry.dispose();
+        child.material.dispose();
+        block.isCreate = false;
+        return;
+      }
+    })
+  }
+
+  function viewRange(){
+    const plane = new THREE.Plane();
+    plane.setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, -2.6, 0));
+
+    // 使用相机的 projectionMatrixInverse 计算四个角的方向
+    const topLeftDir = new THREE.Vector3(-1, 1, -1).unproject(gCamera).sub(gCamera.position).normalize();
+    const topRightDir = new THREE.Vector3(1, 1, -1).unproject(gCamera).sub(gCamera.position).normalize();
+    const bottomLeftDir = new THREE.Vector3(-1, -1, -1).unproject(gCamera).sub(gCamera.position).normalize();
+    const bottomRightDir = new THREE.Vector3(1, -1, -1).unproject(gCamera).sub(gCamera.position).normalize();
+
+    // 创建四个射线
+    const topLeftRay = new THREE.Ray(gCamera.position, topLeftDir);
+    const topRightRay = new THREE.Ray(gCamera.position, topRightDir);
+    const bottomLeftRay = new THREE.Ray(gCamera.position, bottomLeftDir);
+    const bottomRightRay = new THREE.Ray(gCamera.position, bottomRightDir);
+
+    // 计算射线与平面的交点
+    const topLeftIntersection = new THREE.Vector3();
+    const topRightIntersection = new THREE.Vector3();
+    const bottomLeftIntersection = new THREE.Vector3();
+    const bottomRightIntersection = new THREE.Vector3();
+
+    topLeftRay.intersectPlane(plane, topLeftIntersection);
+    topRightRay.intersectPlane(plane, topRightIntersection);
+    bottomLeftRay.intersectPlane(plane, bottomLeftIntersection);
+    bottomRightRay.intersectPlane(plane, bottomRightIntersection);
+
+    return {
+      topLeftIntersection: topLeftIntersection, 
+      topRightIntersection: topRightIntersection, 
+      bottomLeftIntersection: bottomLeftIntersection, 
+      bottomRightIntersection: bottomRightIntersection
+    }
+  }
+
+</script>
+
+<!-- own code-->
+<script src="CONFIG.js"></script>
+<script src="progressive.js"></script>
+<script src="viewdependency.js"></script>
+<script src="defaultposes.js"></script>
+<script src="input.js"></script>
+<script src="pathEditor.js"></script>
+<script src="index.js"></script>
+
+</body>
+</html>
