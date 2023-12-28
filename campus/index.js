@@ -451,7 +451,7 @@ function updateLoadingProgress() {
   imageProgress.innerHTML =
       'Loading images: ' + gLoadedTextures + '/' + numTexturesString;
 
-  document.getElementById('loading-percentage-text').innerHTML = '正在加载中....' + (gLoadedTextures*100.0/numTexturesString).toFixed(0) + '%'
+  document.getElementById('loading-percentage-text').innerHTML = 'Loading....' + (gLoadedTextures*100.0/numTexturesString).toFixed(0) + '%'
 }
 
 
